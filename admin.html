@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f1df"><title>Admin Dashboard | Konaseema Parampara</title>
+<style>
+:root{--green:#15552f;--deep:#103d25;--cream:#fbf5e8;--paper:#fffdf7;--gold:#c79a43;--ink:#263326;--muted:#77776b;--line:#e8ddc8;--red:#8d2525}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}.wrap{max-width:1200px;margin:auto;padding:28px 18px}.brand{color:var(--green);font:800 25px Georgia,serif}.sub{color:var(--muted);margin:6px 0 24px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 10px 28px #352a1410;margin:16px 0}
+.login{max-width:430px;margin:8vh auto}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
+label{font-size:13px;font-weight:700;color:var(--deep)}input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink)}
+.btn{border:0;border-radius:10px;padding:10px 15px;background:var(--green);color:white;font-weight:700}.btn.secondary{background:#eee6d5;color:var(--deep)}.btn:disabled{opacity:.55;cursor:wait}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.muted{color:var(--muted);font-size:13px}
+.status{padding:10px 12px;border-radius:10px;background:#f2ead8;color:var(--deep);margin:12px 0;font-size:14px}.status.error{background:#fae8e4;color:#8d2525}.status.ok{background:#e8f3e9;color:#15552f}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+td input{min-width:85px;padding:8px}.pill{display:inline-block;border-radius:30px;padding:5px 9px;background:#eee6d5;font-size:12px}.hidden{display:none!important}
+.section-title{font:700 20px Georgia,serif;color:var(--deep);margin:0 0 14px}.notice{border-left:4px solid var(--gold);padding:10px 13px;background:#f8f0dd;border-radius:8px;font-size:13px;line-height:1.5}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tab{border:1px solid var(--line);border-radius:10px;padding:10px 15px;background:#fffdf7;color:var(--deep);font-weight:700}.tab.active{background:var(--green);color:white}
+.order-card{border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;background:#fff}.order-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.order-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.meta-box{background:#faf5e9;border-radius:10px;padding:10px;overflow-wrap:anywhere}.meta-label{font-size:11px;color:var(--muted);text-transform:uppercase}.meta-value{font-size:14px;font-weight:600;margin-top:4px;white-space:pre-wrap}.item-list{margin:10px 0;padding-left:20px}.item-list li{margin:6px 0}.order-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.order-actions select{width:auto;min-width:160px}
+@media(max-width:650px){.wrap{padding:18px 12px}.panel{padding:16px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.login{margin:5vh auto}.order-meta{grid-template-columns:1fr}.order-actions select{width:100%}}
+</style></head>
+<body><main class="wrap">
+<div class="row"><div><div class="brand">Konaseema Parampara</div><div class="sub">Secure product and order administration</div></div><div class="row"><span id="who" class="muted"></span><button id="logout" class="btn secondary hidden">Log out</button></div></div>
+<section id="loginPanel" class="panel login"><h1 class="section-title">Admin login</h1><p class="muted">Sign in with the Supabase Auth account that has been added to the admin_users table.</p>
+<form id="loginForm" class="grid"><div class="field full"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div><div class="field full"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div><div class="field full"><button class="btn" id="loginBtn">Sign in</button></div></form><div id="loginMessage" class="status hidden" role="status"></div></section>
+<section id="dashboard" class="hidden">
+<div class="panel"><div class="row"><div><h1 class="section-title">Admin dashboard</h1><div class="muted">Manage product prices and customer orders.</div></div><button class="btn secondary" id="refreshBtn">Refresh data</button></div><div id="mainMessage" class="status hidden" role="status"></div><div class="notice">Changes are saved directly to Supabase. Handle customer information privately and only use it to process orders.</div>
+<div class="tabs"><button class="tab active" data-tab="productsSection">Products &amp; prices</button><button class="tab" data-tab="ordersSection">Customer orders</button></div></div>
+<section id="productsSection">
+<div class="panel"><h2 class="section-title">Existing products and prices</h2><p class="muted">Update the three pack prices for your existing products. This does not add or hide products.</p><div class="table-wrap"><table><thead><tr><th>Product</th><th>Category</th><th>250 g (₹)</th><th>500 g (₹)</th><th>1 kg (₹)</th><th>Action</th></tr></thead><tbody id="productRows"><tr><td colspan="6">Loading products…</td></tr></tbody></table></div></div>
+</section>
+<section id="ordersSection" class="hidden">
+<div class="panel"><div class="row"><div><h2 class="section-title">Customer orders</h2><p class="muted">Newest orders appear first. Select a status and save it to update the order.</p></div><button class="btn secondary" id="refreshOrdersBtn">Refresh orders</button></div><div id="ordersMessage" class="status hidden" role="status"></div><div id="ordersList">Loading orders…</div></div>
+</section>
+</section></main>
+<script>
+const SUPABASE_URL="https://whezjtltyjgquowqupgj.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_tfmUHRpI-HUg6TrnSgkUfw_G_WVhYOe";
+let accessToken="",currentUser=null,products=[],orders=[],orderItems=[];
+const $=id=>document.getElementById(id);
+function showMessage(id,msg,type="ok"){const el=$(id);el.textContent=msg;el.className="status "+type;el.classList.remove("hidden");}
+function hideMessage(id){$(id).classList.add("hidden");}
+function headers(extra={}){return {apikey:SUPABASE_PUBLISHABLE_KEY,Authorization:"Bearer "+accessToken,...extra};}
+async function api(path,options={}){const res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{...options,headers:headers({"Content-Type":"application/json",...(options.headers||{})})});const body=await res.text();if(!res.ok)throw new Error(body||("Supabase request failed: "+res.status));return body?JSON.parse(body):null;}
+async function verifyAdmin(){const res=await fetch(SUPABASE_URL+"/rest/v1/rpc/is_admin",{method:"POST",headers:headers({"Content-Type":"application/json"}),body:"{}"});if(!res.ok)throw new Error("Admin verification failed. Check that this account is listed in admin_users.");if(await res.json()!==true)throw new Error("This login does not have admin access.");}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginBtn").disabled=true;hideMessage("loginMessage");try{
+const res=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})});
+const data=await res.json();if(!res.ok)throw new Error(data.msg||data.message||data.error_description||"Login failed.");
+accessToken=data.access_token;currentUser=data.user;await verifyAdmin();$("loginPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logout").classList.remove("hidden");$("who").textContent=currentUser.email||"Admin";await loadProducts();await loadOrders();
+}catch(err){showMessage("loginMessage",err.message,"error");accessToken="";}finally{$("loginBtn").disabled=false;}});
+$("logout").addEventListener("click",()=>{accessToken="";currentUser=null;products=[];orders=[];orderItems=[];$("dashboard").classList.add("hidden");$("logout").classList.add("hidden");$("loginPanel").classList.remove("hidden");$("who").textContent="";$("password").value="";});
+async function loadProducts(){$("productRows").innerHTML='<tr><td colspan="6">Loading products…</td></tr>';try{const [p,v]=await Promise.all([api("products?select=id,name,category,description,active&order=name.asc"),api("product_variants?select=id,product_id,pack_size,price,active")]);products=p.map(x=>({...x,variants:v.filter(y=>y.product_id===x.id)}));renderRows();hideMessage("mainMessage");}catch(err){$("productRows").innerHTML='<tr><td colspan="6">Could not load products.</td></tr>';showMessage("mainMessage",err.message,"error");}}
+function variantPrice(p,size){const v=p.variants.find(x=>x.pack_size===size);return v?Number(v.price):"";}
+function renderRows(){if(!products.length){$("productRows").innerHTML='<tr><td colspan="6">No products found.</td></tr>';return;}
+$("productRows").innerHTML=products.map(p=>`<tr data-id="${p.id}"><td><strong>${escapeHtml(p.name)}</strong><br><span class="muted">${escapeHtml(p.description||"")}</span></td><td>${escapeHtml(p.category||"")}</td><td><input type="number" min="0" step="0.01" data-size="250 g" value="${variantPrice(p,"250 g")}"></td><td><input type="number" min="0" step="0.01" data-size="500 g" value="${variantPrice(p,"500 g")}"></td><td><input type="number" min="0" step="0.01" data-size="1 kg" value="${variantPrice(p,"1 kg")}"></td><td><button class="btn secondary save-price">Save prices</button></td></tr>`).join("");
+document.querySelectorAll(".save-price").forEach(b=>b.addEventListener("click",savePrices));}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function savePrices(e){const tr=e.currentTarget.closest("tr"),id=tr.dataset.id,btn=e.currentTarget,p=products.find(x=>x.id===id);btn.disabled=true;try{for(const input of tr.querySelectorAll("input[data-size]")){const size=input.dataset.size,value=Number(input.value);if(input.value===""||!Number.isFinite(value)||value<0)throw new Error("Enter a valid non-negative price for all three pack sizes.");const variant=p.variants.find(v=>v.pack_size===size);if(!variant)throw new Error("Missing "+size+" price record for "+p.name+".");await api("product_variants?id=eq."+encodeURIComponent(variant.id),{method:"PATCH",body:JSON.stringify({price:value,active:true})});}showMessage("mainMessage","Prices saved for "+p.name+". Refresh your customer website to verify.","ok");await loadProducts();}catch(err){showMessage("mainMessage",err.message,"error");}finally{btn.disabled=false;}}
+async function loadOrders(){ $("ordersList").textContent="Loading orders…";hideMessage("ordersMessage");try{
+orders=await api("orders?select=id,order_number,customer_name,customer_phone,delivery_address,total_amount,payment_status,order_status,created_at&order=created_at.desc");
+if(!orders.length){$("ordersList").textContent="No customer orders yet.";return;}
+const ids=orders.map(o=>o.id);const inList="("+ids.map(id=>'"'+id+'"').join(",")+")";
+orderItems=await api("order_items?select=id,order_id,product_id,product_name,pack_size,quantity,unit_price,created_at&order_id=in."+encodeURIComponent(inList));
+renderOrders();
+}catch(err){$("ordersList").textContent="Could not load orders. "+err.message;showMessage("ordersMessage","If product prices still load but orders do not, check the orders and order_items admin SELECT policies in Supabase. "+err.message,"error");}}
+function renderOrders(){if(!orders.length){$("ordersList").textContent="No customer orders yet.";return;}
+const statusOptions=[["new","New / Pending"],["confirmed","Confirmed"],["preparing","Preparing"],["dispatched","Dispatched"],["delivered","Delivered"],["cancelled","Cancelled"]];
+$("ordersList").innerHTML=orders.map(o=>{const items=orderItems.filter(i=>i.order_id===o.id);const lines=items.length?items.map(i=>`<li>${escapeHtml(i.product_name||"Product")} — ${escapeHtml(i.pack_size||"")} × ${Number(i.quantity)||0} (₹${(Number(i.unit_price)||0).toFixed(2)} each; line total ₹${((Number(i.unit_price)||0)*(Number(i.quantity)||0)).toFixed(2)})</li>`).join(""):"<li>No item details found for this order.</li>";
+const current=String(o.order_status||"new").toLowerCase();const opts=statusOptions.map(([v,label])=>`<option value="${v}" ${current===v?"selected":""}>${label}</option>`).join("")+(!statusOptions.some(([v])=>v===current)?`<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`:"");
+return `<article class="order-card" data-order-id="${o.id}"><div class="order-head"><div><strong>Order ${escapeHtml(o.order_number||o.id)}</strong><div class="muted">${o.created_at?new Date(o.created_at).toLocaleString():""}</div></div><span class="pill">Payment: ${escapeHtml(o.payment_status||"pending")}</span></div>
+<div class="order-meta"><div class="meta-box"><div class="meta-label">Customer</div><div class="meta-value">${escapeHtml(o.customer_name||"")}</div><div class="muted">${escapeHtml(o.customer_phone||"")}</div></div><div class="meta-box"><div class="meta-label">Delivery address</div><div class="meta-value">${escapeHtml(o.delivery_address||"")}</div></div><div class="meta-box"><div class="meta-label">Order total</div><div class="meta-value">₹${Number(o.total_amount||0).toFixed(2)}</div></div></div>
+<strong>Items ordered</strong><ul class="item-list">${lines}</ul><div class="order-actions"><label for="status-${o.id}">Order status</label><select id="status-${o.id}" class="order-status">${opts}</select><button class="btn save-status">Save status</button></div></article>`;}).join("");
+document.querySelectorAll(".save-status").forEach(b=>b.addEventListener("click",saveOrderStatus));}
+async function saveOrderStatus(e){const card=e.currentTarget.closest("[data-order-id]"),id=card.dataset.orderId,select=card.querySelector(".order-status"),btn=e.currentTarget;btn.disabled=true;try{await api("orders?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify({order_status:select.value})});const o=orders.find(x=>x.id===id);if(o)o.order_status=select.value;showMessage("ordersMessage","Order status updated successfully.","ok");}catch(err){showMessage("ordersMessage","Could not update status. Check the orders admin UPDATE policy and allowed order_status values. "+err.message,"error");}finally{btn.disabled=false;}}
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===btn));$("productsSection").classList.toggle("hidden",btn.dataset.tab!=="productsSection");$("ordersSection").classList.toggle("hidden",btn.dataset.tab!=="ordersSection");}));
+$("refreshBtn").addEventListener("click",async()=>{await loadProducts();await loadOrders();});$("refreshOrdersBtn").addEventListener("click",loadOrders);
+</script></body></html>
